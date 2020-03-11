@@ -25,6 +25,7 @@ class FC_MS5611_Lib
 	float getPressure(); // new pressure value is updated about 111 times per second
 	float getSmoothPressure(); // same as getPressure but smoother
 	void runBarometer(); // called in the main loop() AS FAST AS POSSIBLE
+	void registerNewBaroReadingFunction(void (*functionPointer)()); // When baro get new reading this function will be called
 	
 	// friend functions used in the TaskPlanner
 	friend void requestPressureStartTask();
@@ -66,6 +67,8 @@ class FC_MS5611_Lib
 	
 	// this counter is used to get temperature every 20 readings
 	uint8_t actionCounter = 0;
+
+	void (*newBaroReadingFunctionPointer)() = nullptr;
 };
 
 

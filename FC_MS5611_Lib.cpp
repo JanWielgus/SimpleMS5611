@@ -102,6 +102,12 @@ void FC_MS5611_Lib::runBarometer()
 }
 
 
+void FC_MS5611_Lib::registerNewBaroReadingFunction(void (*functionPointer)())
+{
+	newBaroReadingFunctionPointer = functionPointer;
+}
+
+
 
 
 void FC_MS5611_Lib::requestPressureFromDevice()
@@ -168,6 +174,10 @@ void FC_MS5611_Lib::calculatePressureAndTemperatureFromRawData()
 	else
 		smoothPressure = smoothPressure*0.96f + pressure*0.04f;
 	lastSmoothPressure = smoothPressure;
+
+	// Call function added by the user (if not null)
+	if (newBaroReadingFunctionPointer != nullptr)
+		newBaroReadingFunctionPointer();
 }
 
 
