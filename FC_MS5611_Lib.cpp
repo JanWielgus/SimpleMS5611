@@ -5,10 +5,9 @@
 #include <FC_MS5611_Lib.h>
 
 
-// Have to pre-create an object to use the TaskPlanner
-// Otherwise it will complicate the program very much
-FC_MS5611_Lib baro;
-
+// Ptr to the baro object
+// Set up in the constructor
+FC_MS5611_Lib* baroPtr;
 
 // Three functions used in the TaskPlanner
 void requestPressureStartTask();
@@ -17,10 +16,14 @@ void temperatureAction();
 
 
 
-FC_MS5611_Lib::FC_MS5611_Lib()
+
+FC_MS5611_Lib::FC_MS5611_Lib(FC_TaskPlanner* taskPlannerPtr)
 	: pressureFilter(20) // average 20 past measurements
 {
-	
+	this->taskPlanner = taskPlannerPtr;
+
+	// Set up the baro ptr used by the class friend funcitons
+	baroPtr = this;
 }
 
 
@@ -61,7 +64,7 @@ bool FC_MS5611_Lib::initialize(bool needToBeginWire_flag)
 	
 	
 	// Schedule first baro reading action
-	taskPlanner.scheduleTask(requestPressureStartTask, 8);
+	taskPlanner->scheduleTask(requestPressureStartTask, 8);
 	
 	
 	
@@ -71,7 +74,7 @@ bool FC_MS5611_Lib::initialize(bool needToBeginWire_flag)
 	while (millis() < readingEndTime)
 	{
 		// as fast as possible
-		runBarometer();
+		taskPlanner->runPlanner();
 	}
 	
 	return true;
@@ -93,12 +96,6 @@ float FC_MS5611_Lib::getPressure()
 float FC_MS5611_Lib::getSmoothPressure()
 {
 	return smoothPressure;
-}
-
-
-void FC_MS5611_Lib::runBarometer()
-{
-	taskPlanner.runPlanner();
 }
 
 
@@ -186,37 +183,37 @@ void FC_MS5611_Lib::calculatePressureAndTemperatureFromRawData()
 
 void requestPressureStartTask()
 {
-	baro.requestPressureFromDevice();
+	baroPtr->requestPressureFromDevice();
 	
 	// Schedule first pressure action
-	baro.taskPlanner.scheduleTask(pressureAction, 9);
+	baroPtr->taskPlanner->scheduleTask(pressureAction, 9);
 }
 
 void pressureAction()
 {
-	baro.actionCounter++;
-	baro.getRawPressureFromDevice();
-	baro.calculatePressureAndTemperatureFromRawData();
+	baroPtr->actionCounter++;
+	baroPtr->getRawPressureFromDevice();
+	baroPtr->calculatePressureAndTemperatureFromRawData();
 	
-	if (baro.actionCounter == 20)
+	if (baroPtr->actionCounter == 20)
 	{
-		baro.requestTemperatureFromDevice();
-		baro.taskPlanner.scheduleTask(temperatureAction, 9);
+		baroPtr->requestTemperatureFromDevice();
+		baroPtr->taskPlanner->scheduleTask(temperatureAction, 9);
 	}
 	else
 	{
-		baro.requestPressureFromDevice();
-		baro.taskPlanner.scheduleTask(pressureAction, 9);
+		baroPtr->requestPressureFromDevice();
+		baroPtr->taskPlanner->scheduleTask(pressureAction, 9);
 	}
 }
 
 void temperatureAction()
 {
-	baro.getRawTemperatreFromDevice();
-	baro.calculatePressureAndTemperatureFromRawData();
-	baro.requestPressureFromDevice();
-	baro.actionCounter = 1;
-	baro.taskPlanner.scheduleTask(pressureAction, 9);
+	baroPtr->getRawTemperatreFromDevice();
+	baroPtr->calculatePressureAndTemperatureFromRawData();
+	baroPtr->requestPressureFromDevice();
+	baroPtr->actionCounter = 1;
+	baroPtr->taskPlanner->scheduleTask(pressureAction, 9);
 }
 
 

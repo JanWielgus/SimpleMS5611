@@ -5,11 +5,7 @@
 #ifndef _FC_MS5611_LIB_h
 #define _FC_MS5611_LIB_h
 
-#if defined(ARDUINO) && ARDUINO >= 100
-	#include "arduino.h"
-#else
-	#include "WProgram.h"
-#endif
+#include "arduino.h"
 
 #include <Wire.h>
 #include <FC_TaskPlanner.h>
@@ -19,18 +15,13 @@
 class FC_MS5611_Lib
 {
  public:
-	FC_MS5611_Lib();
+	FC_MS5611_Lib(FC_TaskPlanner* taskPlannerPtr);
 	bool initialize(bool needToBeginWire_flag = true);
 	void setFastClock();
 	float getPressure(); // new pressure value is updated about 111 times per second
 	float getSmoothPressure(); // same as getPressure but smoother
-	void runBarometer(); // called in the main loop() AS FAST AS POSSIBLE
 	void registerNewBaroReadingFunction(void (*functionPointer)()); // When baro get new reading this function will be called
-	
-	// friend functions used in the TaskPlanner
-	friend void requestPressureStartTask();
-	friend void pressureAction();
-	friend void temperatureAction();
+
 	
  private:
 	void requestPressureFromDevice();
@@ -38,12 +29,18 @@ class FC_MS5611_Lib
 	void requestTemperatureFromDevice();
 	void getRawTemperatreFromDevice(); // need to request first!
 	void calculatePressureAndTemperatureFromRawData(); // after requesting raw data
+
+
+	// friend functions used in the TaskPlanner
+	friend void requestPressureStartTask();
+	friend void pressureAction();
+	friend void temperatureAction();
 	
 	
 	
 	
  private:
-	FC_TaskPlanner taskPlanner = FC_TaskPlanner(3); // max 3 tasks will be planned at single moment
+	FC_TaskPlanner* taskPlanner; // task planner should have capability of storing at least 2 tasks at once
 	FC_AverageFilter<int32_t, int32_t, double> pressureFilter; // initialized in the constructor
 	
 	static const uint8_t MS5611_Address = 0x77;
@@ -70,9 +67,6 @@ class FC_MS5611_Lib
 
 	void (*newBaroReadingFunctionPointer)() = nullptr;
 };
-
-
-extern FC_MS5611_Lib baro;
 
 
 #endif
