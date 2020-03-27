@@ -5,49 +5,48 @@
 #ifndef _FC_MS5611_LIB_h
 #define _FC_MS5611_LIB_h
 
-#if defined(ARDUINO) && ARDUINO >= 100
-	#include "arduino.h"
-#else
-	#include "WProgram.h"
-#endif
+#include "arduino.h"
 
 #include <Wire.h>
 #include <FC_TaskPlanner.h>
 #include <FC_AverageFilter.h>
 
+#define pressureType float // This can be float or double (float should be enough but I'm not 100% sure)
+
 
 class FC_MS5611_Lib
 {
- public:
-	FC_MS5611_Lib();
+public:
+	FC_MS5611_Lib(FC_TaskPlanner* taskPlannerPtr);
 	bool initialize(bool needToBeginWire_flag = true);
 	void setFastClock();
-	float getPressure(); // new pressure value is updated about 111 times per second
-	float getSmoothPressure(); // same as getPressure but smoother
-	void runBarometer(); // called in the main loop() AS FAST AS POSSIBLE
+	pressureType getPressure(); // new pressure value is updated about 111 times per second
+	pressureType getSmoothPressure(); // same as getPressure but smoother
 	void registerNewBaroReadingFunction(void (*functionPointer)()); // When baro get new reading this function will be called
+
 	
-	// friend functions used in the TaskPlanner
-	friend void requestPressureStartTask();
-	friend void pressureAction();
-	friend void temperatureAction();
-	
- private:
+private:
 	void requestPressureFromDevice();
 	void getRawPressureFromDevice(); // need to request first!
 	void requestTemperatureFromDevice();
 	void getRawTemperatreFromDevice(); // need to request first!
 	void calculatePressureAndTemperatureFromRawData(); // after requesting raw data
+
+
+	// friend functions used in the TaskPlanner
+	friend void requestPressureStartTask();
+	friend void pressureAction();
+	friend void temperatureAction();
 	
 	
 	
 	
- private:
-	FC_TaskPlanner taskPlanner = FC_TaskPlanner(3); // max 3 tasks will be planned at single moment
-	FC_AverageFilter<int32_t, int32_t, double> pressureFilter; // initialized in the constructor
+private:
+	FC_TaskPlanner* taskPlanner; // task planner should have capability of storing at least 2 tasks at once
+	FC_AverageFilter<int32_t, int32_t, pressureType> pressureFilter; // initialized in the constructor
 	
 	static const uint8_t MS5611_Address = 0x77;
-	static const uint8_t AFTER_REQUEST_WAIT_TIME = 8;
+	static const uint8_t REQUEST_WAIT_TIME = 9; // time in ms between value request and ready to read from device
 	
 	
 	// Device calibration values
@@ -61,18 +60,14 @@ class FC_MS5611_Lib
 	uint32_t rawPressure;
 	uint32_t rawTemperature;
 	int32_t intPressure; // temp pressure value (before average pressure is in integer)
-	float smoothPressure; // smoother pressure value (in mbar*100)
-	float lastSmoothPressure; // used to calculate the smooth pressure value
-	float pressure; // pressure in mbar*100
+	pressureType smoothPressure; // smoother pressure value (in mbar*100)
+	pressureType pressure; // pressure in mbar*100
 	
 	// this counter is used to get temperature every 20 readings
 	uint8_t actionCounter = 0;
 
 	void (*newBaroReadingFunctionPointer)() = nullptr;
 };
-
-
-extern FC_MS5611_Lib baro;
 
 
 #endif

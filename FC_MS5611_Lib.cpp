@@ -5,10 +5,9 @@
 #include <FC_MS5611_Lib.h>
 
 
-// Have to pre-create an object to use the TaskPlanner
-// Otherwise it will complicate the program very much
-FC_MS5611_Lib baro;
-
+// Ptr to the baro object
+// Set up in the constructor
+FC_MS5611_Lib* baroPtr;
 
 // Three functions used in the TaskPlanner
 void requestPressureStartTask();
@@ -17,10 +16,14 @@ void temperatureAction();
 
 
 
-FC_MS5611_Lib::FC_MS5611_Lib()
+
+FC_MS5611_Lib::FC_MS5611_Lib(FC_TaskPlanner* taskPlannerPtr)
 	: pressureFilter(20) // average 20 past measurements
 {
-	
+	this->taskPlanner = taskPlannerPtr;
+
+	// Set up the baro ptr used by the class friend funcitons
+	baroPtr = this;
 }
 
 
@@ -58,20 +61,19 @@ bool FC_MS5611_Lib::initialize(bool needToBeginWire_flag)
 	SENS_C1 = C[1] * pow(2, 15);
 	
 	
-	
-	
+
 	// Schedule first baro reading action
-	taskPlanner.scheduleTask(requestPressureStartTask, 8);
+	requestPressureStartTask();
 	
 	
-	
+
 	// The MS5611 needs a few readings to stabilize
 	// Read pressure for 400ms
 	uint32_t readingEndTime = millis() + 400;
 	while (millis() < readingEndTime)
 	{
 		// as fast as possible
-		runBarometer();
+		taskPlanner->runPlanner();
 	}
 	
 	return true;
@@ -84,21 +86,15 @@ void FC_MS5611_Lib::setFastClock()
 }
 
 
-float FC_MS5611_Lib::getPressure()
+pressureType FC_MS5611_Lib::getPressure()
 {
 	return pressure;
 }
 
 
-float FC_MS5611_Lib::getSmoothPressure()
+pressureType FC_MS5611_Lib::getSmoothPressure()
 {
 	return smoothPressure;
-}
-
-
-void FC_MS5611_Lib::runBarometer()
-{
-	taskPlanner.runPlanner();
 }
 
 
@@ -169,11 +165,11 @@ void FC_MS5611_Lib::calculatePressureAndTemperatureFromRawData()
 	
 	
 	// Smooth the value
-	if (abs(lastSmoothPressure - pressure) > 1)
+	if (abs(smoothPressure - pressure) > 1)
 		smoothPressure = smoothPressure*0.72f + pressure*0.28f;
 	else
 		smoothPressure = smoothPressure*0.96f + pressure*0.04f;
-	lastSmoothPressure = smoothPressure;
+
 
 	// Call function added by the user (if not null)
 	if (newBaroReadingFunctionPointer != nullptr)
@@ -186,37 +182,37 @@ void FC_MS5611_Lib::calculatePressureAndTemperatureFromRawData()
 
 void requestPressureStartTask()
 {
-	baro.requestPressureFromDevice();
+	baroPtr->requestPressureFromDevice();
 	
 	// Schedule first pressure action
-	baro.taskPlanner.scheduleTask(pressureAction, 9);
+	baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 }
 
 void pressureAction()
 {
-	baro.actionCounter++;
-	baro.getRawPressureFromDevice();
-	baro.calculatePressureAndTemperatureFromRawData();
+	baroPtr->actionCounter++;
+	baroPtr->getRawPressureFromDevice();
+	baroPtr->calculatePressureAndTemperatureFromRawData();
 	
-	if (baro.actionCounter == 20)
+	if (baroPtr->actionCounter == 20)
 	{
-		baro.requestTemperatureFromDevice();
-		baro.taskPlanner.scheduleTask(temperatureAction, 9);
+		baroPtr->requestTemperatureFromDevice();
+		baroPtr->taskPlanner->scheduleTask(temperatureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 	}
 	else
 	{
-		baro.requestPressureFromDevice();
-		baro.taskPlanner.scheduleTask(pressureAction, 9);
+		baroPtr->requestPressureFromDevice();
+		baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 	}
 }
 
 void temperatureAction()
 {
-	baro.getRawTemperatreFromDevice();
-	baro.calculatePressureAndTemperatureFromRawData();
-	baro.requestPressureFromDevice();
-	baro.actionCounter = 1;
-	baro.taskPlanner.scheduleTask(pressureAction, 9);
+	baroPtr->getRawTemperatreFromDevice();
+	baroPtr->calculatePressureAndTemperatureFromRawData();
+	baroPtr->requestPressureFromDevice();
+	baroPtr->actionCounter = 1;
+	baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 }
 
 
