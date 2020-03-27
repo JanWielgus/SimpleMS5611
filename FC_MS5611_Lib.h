@@ -44,7 +44,7 @@ class FC_MS5611_Lib
 	FC_AverageFilter<int32_t, int32_t, double> pressureFilter; // initialized in the constructor
 	
 	static const uint8_t MS5611_Address = 0x77;
-	static const uint8_t AFTER_REQUEST_WAIT_TIME = 8;
+	static const uint8_t REQUEST_WAIT_TIME = 9; // time in ms between value request and ready to read from device
 	
 	
 	// Device calibration values

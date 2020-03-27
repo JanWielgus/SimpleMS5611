@@ -61,13 +61,12 @@ bool FC_MS5611_Lib::initialize(bool needToBeginWire_flag)
 	SENS_C1 = C[1] * pow(2, 15);
 	
 	
-	
-	
+
 	// Schedule first baro reading action
-	taskPlanner->scheduleTask(requestPressureStartTask, 8);
+	requestPressureStartTask();
 	
 	
-	
+
 	// The MS5611 needs a few readings to stabilize
 	// Read pressure for 400ms
 	uint32_t readingEndTime = millis() + 400;
@@ -186,7 +185,7 @@ void requestPressureStartTask()
 	baroPtr->requestPressureFromDevice();
 	
 	// Schedule first pressure action
-	baroPtr->taskPlanner->scheduleTask(pressureAction, 9);
+	baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 }
 
 void pressureAction()
@@ -198,12 +197,12 @@ void pressureAction()
 	if (baroPtr->actionCounter == 20)
 	{
 		baroPtr->requestTemperatureFromDevice();
-		baroPtr->taskPlanner->scheduleTask(temperatureAction, 9);
+		baroPtr->taskPlanner->scheduleTask(temperatureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 	}
 	else
 	{
 		baroPtr->requestPressureFromDevice();
-		baroPtr->taskPlanner->scheduleTask(pressureAction, 9);
+		baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 	}
 }
 
@@ -213,7 +212,7 @@ void temperatureAction()
 	baroPtr->calculatePressureAndTemperatureFromRawData();
 	baroPtr->requestPressureFromDevice();
 	baroPtr->actionCounter = 1;
-	baroPtr->taskPlanner->scheduleTask(pressureAction, 9);
+	baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 }
 
 
