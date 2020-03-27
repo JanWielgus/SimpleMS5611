@@ -59,7 +59,6 @@ class FC_MS5611_Lib
 	uint32_t rawTemperature;
 	int32_t intPressure; // temp pressure value (before average pressure is in integer)
 	float smoothPressure; // smoother pressure value (in mbar*100)
-	float lastSmoothPressure; // used to calculate the smooth pressure value
 	float pressure; // pressure in mbar*100
 	
 	// this counter is used to get temperature every 20 readings

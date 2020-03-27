@@ -166,11 +166,11 @@ void FC_MS5611_Lib::calculatePressureAndTemperatureFromRawData()
 	
 	
 	// Smooth the value
-	if (abs(lastSmoothPressure - pressure) > 1)
+	if (abs(smoothPressure - pressure) > 1)
 		smoothPressure = smoothPressure*0.72f + pressure*0.28f;
 	else
 		smoothPressure = smoothPressure*0.96f + pressure*0.04f;
-	lastSmoothPressure = smoothPressure;
+
 
 	// Call function added by the user (if not null)
 	if (newBaroReadingFunctionPointer != nullptr)
