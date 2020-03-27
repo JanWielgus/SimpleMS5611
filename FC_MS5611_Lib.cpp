@@ -86,13 +86,13 @@ void FC_MS5611_Lib::setFastClock()
 }
 
 
-float FC_MS5611_Lib::getPressure()
+pressureType FC_MS5611_Lib::getPressure()
 {
 	return pressure;
 }
 
 
-float FC_MS5611_Lib::getSmoothPressure()
+pressureType FC_MS5611_Lib::getSmoothPressure()
 {
 	return smoothPressure;
 }
