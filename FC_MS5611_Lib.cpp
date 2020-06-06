@@ -154,9 +154,9 @@ void FC_MS5611_Lib::calculatePressureAndTemperatureFromRawData()
 	dT <<= 8;
 	dT *= -1;
 	dT += rawTemperature;
-	OFF = OFF_C2 + ((int64_t)dT * (int64_t)C[4]) / pow(2, 7);
-	SENS = SENS_C1 + ((int64_t)dT * (int64_t)C[3]) / pow(2, 8);
-	intPressure = ((rawPressure * SENS) / pow(2, 21) - OFF) / pow(2, 15);
+	OFF = OFF_C2 + ((int64_t)dT * (int64_t)C[4]) * 0.0078125; // 0.0078125 = 1 / pow(2, 7)
+	SENS = SENS_C1 + ((int64_t)dT * (int64_t)C[3]) * 0.00390625; // 0.00390625 = 1 / pow(2, 8)
+	intPressure = ((rawPressure * SENS) * 0.0000004768371582 - OFF) * 0.000030517578125; // 0.0000004768371582 = 1 / pow(2, 21),   0.000030517578125 = 1 / pow(2, 15)
 	
 	
 	// Make the average from 20 readings
@@ -185,7 +185,7 @@ void requestPressureStartTask()
 	baroPtr->requestPressureFromDevice();
 	
 	// Schedule first pressure action
-	baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
+	baroPtr->taskPlanner->scheduleTaskMicroseconds(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 }
 
 void pressureAction()
@@ -197,12 +197,12 @@ void pressureAction()
 	if (baroPtr->actionCounter == 20)
 	{
 		baroPtr->requestTemperatureFromDevice();
-		baroPtr->taskPlanner->scheduleTask(temperatureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
+		baroPtr->taskPlanner->scheduleTaskMicroseconds(temperatureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 	}
 	else
 	{
 		baroPtr->requestPressureFromDevice();
-		baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
+		baroPtr->taskPlanner->scheduleTaskMicroseconds(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 	}
 }
 
@@ -212,7 +212,7 @@ void temperatureAction()
 	baroPtr->calculatePressureAndTemperatureFromRawData();
 	baroPtr->requestPressureFromDevice();
 	baroPtr->actionCounter = 1;
-	baroPtr->taskPlanner->scheduleTask(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
+	baroPtr->taskPlanner->scheduleTaskMicroseconds(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 }
 
 
