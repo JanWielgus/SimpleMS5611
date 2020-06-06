@@ -190,10 +190,11 @@ void requestPressureStartTask()
 
 void pressureAction()
 {
+	// get raw data
 	baroPtr->actionCounter++;
 	baroPtr->getRawPressureFromDevice();
-	baroPtr->calculatePressureAndTemperatureFromRawData();
 	
+	// schedule next action
 	if (baroPtr->actionCounter == 20)
 	{
 		baroPtr->requestTemperatureFromDevice();
@@ -204,15 +205,23 @@ void pressureAction()
 		baroPtr->requestPressureFromDevice();
 		baroPtr->taskPlanner->scheduleTaskMicroseconds(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
 	}
+
+	// calculate pressure and temperature
+	baroPtr->calculatePressureAndTemperatureFromRawData();
 }
 
 void temperatureAction()
 {
+	// get raw data
 	baroPtr->getRawTemperatreFromDevice();
-	baroPtr->calculatePressureAndTemperatureFromRawData();
-	baroPtr->requestPressureFromDevice();
+	
+	// schedule next action
 	baroPtr->actionCounter = 1;
+	baroPtr->requestPressureFromDevice();
 	baroPtr->taskPlanner->scheduleTaskMicroseconds(pressureAction, FC_MS5611_Lib::REQUEST_WAIT_TIME);
+
+	// calculate pressure and temperature
+	baroPtr->calculatePressureAndTemperatureFromRawData();
 }
 
 
