@@ -46,7 +46,7 @@ private:
 	FC_AverageFilter<int32_t, int32_t, pressureType> pressureFilter; // initialized in the constructor
 	
 	static const uint8_t MS5611_Address = 0x77;
-	static const uint32_t REQUEST_WAIT_TIME = 8000; // time in us between value request and ready to read from device
+	static const uint32_t REQUEST_WAIT_TIME = 8300; // time in us between value request and ready to read from device (check in datasheet)
 	
 	
 	// Device calibration values
