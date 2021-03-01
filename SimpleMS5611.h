@@ -57,17 +57,17 @@ public:
 
 	/**
 	 * @brief Getter of the last pressure value
-	 * read from the device.
-	 * @return Last pressure value.
+	 * read from the device using readPressure() method.
+	 * @return Last read pressure value.
 	 */
-	float getLastPressure();
+	virtual float getPressure();
 
 	/**
 	 * @brief Getter of the last temperature value
-	 * read from the device.
-	 * @return Last temperature value.
+	 * read from the device using readPressure() method.
+	 * @return Last read temperature value.
 	 */
-	//float getLastTemperature();
+	//float getTemperature();
 
 	
 protected:

@@ -63,7 +63,7 @@ float SimpleMS5611::readPressure()
 }
 
 
-float SimpleMS5611::getLastPressure()
+float SimpleMS5611::getPressure()
 {
 	return pressure;
 }
