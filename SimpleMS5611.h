@@ -33,8 +33,8 @@ protected:
 	uint32_t rawPressure = 0;
 	uint32_t rawTemperature = 0;
 
-	int32_t intPressure;
-	float pressure; // pressure in mbar*100 (WHY??) // TODO: add unit in var name (mbar)
+	int32_t pressure_pascal; // helper in calculations
+	float pressure_mbar;
 
 
 public:
@@ -51,14 +51,14 @@ public:
 	/**
 	 * @brief Requests pressure and temperature from the MS5611
 	 * and correct pressure value with temperature.
-	 * @return New pressure reading.
+	 * @return New pressure reading [mbar].
 	 */
 	float readPressure();
 
 	/**
 	 * @brief Getter of the last pressure value
 	 * read from the device using readPressure() method.
-	 * @return Last read pressure value.
+	 * @return Last read pressure value [mbar]
 	 */
 	virtual float getPressure();
 

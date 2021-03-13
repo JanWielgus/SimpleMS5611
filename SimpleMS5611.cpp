@@ -59,13 +59,13 @@ float SimpleMS5611::readPressure()
 
 	calculatePressureAndTemperatureFromRawData();
 
-	return pressure;
+	return pressure_mbar;
 }
 
 
 float SimpleMS5611::getPressure()
 {
-	return pressure;
+	return pressure_mbar;
 }
 
 
@@ -119,9 +119,8 @@ void SimpleMS5611::calculatePressureAndTemperatureFromRawData()
 	dT += rawTemperature;
 	OFF = OFF_C2 + ((int64_t)dT * (int64_t)C[4]) * 0.0078125; // 0.0078125 = 1 / pow(2, 7)
 	SENS = SENS_C1 + ((int64_t)dT * (int64_t)C[3]) * 0.00390625; // 0.00390625 = 1 / pow(2, 8)
-	intPressure = ((rawPressure * SENS) * 0.0000004768371582 - OFF) * 0.000030517578125; // 0.0000004768371582 = 1 / pow(2, 21),   0.000030517578125 = 1 / pow(2, 15)
-	// TODO: change name of the intPressure variable
+	pressure_pascal = ((rawPressure * SENS) * 0.0000004768371582 - OFF) * 0.000030517578125; // 0.0000004768371582 = 1 / pow(2, 21),   0.000030517578125 = 1 / pow(2, 15)
 
-	pressure = intPressure; // TODO: probably there is a need to divide intPressure by some power of 10
+	pressure_mbar = pressure_pascal / 100.f;
 }
 
