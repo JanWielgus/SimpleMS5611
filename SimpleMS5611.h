@@ -13,7 +13,6 @@
     #include <Arduino.h>
 #endif
 
-#include <ITasker.h>
 #include <AverageFilter.h>
 
 
