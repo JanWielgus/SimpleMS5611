@@ -23,6 +23,8 @@ class SimpleMS5611
 	int64_t OFF, OFF_C2, SENS, SENS_C1;
 	int32_t dT;
 
+	int32_t pressure_pascal; // helper in calculations
+
 
 protected:
 	static const uint8_t MS5611_Address = 0x77;
@@ -32,7 +34,6 @@ protected:
 	uint32_t rawPressure = 0;
 	uint32_t rawTemperature = 0;
 
-	int32_t pressure_pascal; // helper in calculations
 	float pressure_mbar;
 
 
@@ -45,7 +46,7 @@ public:
 	 * @return false if something went wrong,
 	 * true otherwise.
 	 */
-	virtual bool initialize();
+	bool initialize();
 
 	/**
 	 * @brief Requests pressure and temperature from the MS5611
@@ -59,7 +60,7 @@ public:
 	 * read from the device using readPressure() method.
 	 * @return Last read pressure value [mbar]
 	 */
-	virtual float getPressure();
+	float getPressure();
 
 	/**
 	 * @brief Getter of the last temperature value
