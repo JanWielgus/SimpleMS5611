@@ -22,6 +22,7 @@ class SimpleMS5611
 	uint16_t C[7]; // 0 position is not used (7 to use positions from 1 to 6 as in the datasheet)
 	int64_t OFF, OFF_C2, SENS, SENS_C1;
 	int32_t dT;
+	float TEMPSENS; // helper in calculating temperature (like in datasheet)
 
 	int32_t pressure_pascal; // helper in calculations
 
@@ -61,6 +62,11 @@ public:
 	 * @return Last read pressure value [mbar]
 	 */
 	float getPressure();
+
+	/**
+	 * @brief Get last measured temperature.
+	 */
+	float getTempereture();
 
 	/**
 	 * @brief Getter of the last temperature value

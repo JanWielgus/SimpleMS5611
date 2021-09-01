@@ -42,6 +42,7 @@ bool SimpleMS5611::initialize()
 	// Pre-calculate some values
 	OFF_C2 = C[2] * pow(2, 16);
 	SENS_C1 = C[1] * pow(2, 15);
+	TEMPSENS = C[6] / pow(2, 23);
 	
 	return true;
 }
@@ -66,6 +67,12 @@ float SimpleMS5611::readPressure()
 float SimpleMS5611::getPressure()
 {
 	return pressure_mbar;
+}
+
+
+float SimpleMS5611::getTempereture() 
+{
+	return (TEMPSENS * dT + 2000) / 100.f;
 }
 
 
